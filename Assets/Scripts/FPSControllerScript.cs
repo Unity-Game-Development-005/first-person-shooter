@@ -1,5 +1,7 @@
 
+using System.Collections;
 using UnityEngine;
+
 
 public class FPSControllerScript : MonoBehaviour
 {
@@ -13,10 +15,10 @@ public class FPSControllerScript : MonoBehaviour
     [SerializeField] private float runMultiplier = 2f;
 
     // player jump height
-    [SerializeField] private float jumpForce = 7f;
+    [SerializeField] private float jumpForce = 2f; //7f;
 
     // amount of gravity applied to the player
-    [SerializeField] private float gravity = 9.8f;
+    [SerializeField] private float gravity = 6f; //9.8f;
 
     // how quickly the mouse moves
     public float mouseSensitivity = 2f;
@@ -52,6 +54,21 @@ public class FPSControllerScript : MonoBehaviour
 
         // and hide it
         Cursor.visible = false;
+
+
+        PlayerHealthController.playerHealthController.currentHealth = PlayerHealthController.playerHealthController.maximumHealth;
+
+        PlayerHealthController.playerHealthController.currentRunStamina = PlayerHealthController.playerHealthController.maximumRunStamina;
+
+
+        UIController.uiController.healthBarSlider.maxValue = PlayerHealthController.playerHealthController.maximumHealth;
+
+        UIController.uiController.healthBarSlider.value = PlayerHealthController.playerHealthController.currentHealth;
+
+        UIController.uiController.staminaBarSlider.maxValue = PlayerHealthController.playerHealthController.maximumRunStamina;
+
+        UIController.uiController.staminaBarSlider.value = PlayerHealthController.playerHealthController.currentRunStamina;
+
     }
 
 
@@ -113,6 +130,15 @@ public class FPSControllerScript : MonoBehaviour
             {
                 // make the player run
                 moveSpeed *= runMultiplier;
+
+                PlayerHealthController.playerHealthController.currentRunStamina -= PlayerHealthController.playerHealthController.runEnergyUse * Time.deltaTime;
+
+                if (PlayerHealthController.playerHealthController.currentRunStamina <= 0)
+                {
+                    PlayerHealthController.playerHealthController.currentRunStamina = 0;
+                }
+
+                UIController.uiController.staminaBarSlider.value = PlayerHealthController.playerHealthController.currentRunStamina / PlayerHealthController.playerHealthController.maximumRunStamina;
             }
 
             // if the player releases the run key
@@ -120,6 +146,13 @@ public class FPSControllerScript : MonoBehaviour
             {
                 // stop the player from running
                 moveSpeed /= runMultiplier;
+
+                if (PlayerHealthController.playerHealthController.rechargeRunStamina != null)
+                {
+                    StopCoroutine(PlayerHealthController.playerHealthController.RechargeStamina());
+                }
+
+                PlayerHealthController.playerHealthController.rechargeRunStamina = StartCoroutine(PlayerHealthController.playerHealthController.RechargeStamina());
             }
         }
 
