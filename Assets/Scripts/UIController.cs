@@ -1,6 +1,7 @@
 
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 
 public class UIController : MonoBehaviour
@@ -11,6 +12,8 @@ public class UIController : MonoBehaviour
     public Slider healthBarSlider;
 
     public Slider staminaBarSlider;
+
+    public TMP_Text ammoText;
 
 
 

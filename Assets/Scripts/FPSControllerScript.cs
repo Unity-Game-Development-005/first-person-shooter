@@ -69,6 +69,8 @@ public class FPSControllerScript : MonoBehaviour
 
         UIController.uiController.staminaBarSlider.value = PlayerHealthController.playerHealthController.currentRunStamina;
 
+        UIController.uiController.ammoText.text = "AMMO: 2000";
+
     }
 
 
@@ -157,6 +159,8 @@ public class FPSControllerScript : MonoBehaviour
                 // otherwise
                 // start the run stamina recharge
                 PlayerHealthController.playerHealthController.rechargeRunStamina = StartCoroutine(PlayerHealthController.playerHealthController.RechargeStamina());
+
+                UIController.uiController.staminaBarSlider.value = PlayerHealthController.playerHealthController.currentRunStamina / PlayerHealthController.playerHealthController.maximumRunStamina;
             }
         }
 
