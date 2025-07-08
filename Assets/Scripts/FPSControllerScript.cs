@@ -147,11 +147,15 @@ public class FPSControllerScript : MonoBehaviour
                 // stop the player from running
                 moveSpeed /= runMultiplier;
 
+                // if the run stamina recharge is currently running
                 if (PlayerHealthController.playerHealthController.rechargeRunStamina != null)
                 {
+                    // stop the run stamina recharge
                     StopCoroutine(PlayerHealthController.playerHealthController.RechargeStamina());
                 }
 
+                // otherwise
+                // start the run stamina recharge
                 PlayerHealthController.playerHealthController.rechargeRunStamina = StartCoroutine(PlayerHealthController.playerHealthController.RechargeStamina());
             }
         }
