@@ -1,5 +1,4 @@
 
-using System.Collections;
 using UnityEngine;
 
 
@@ -8,11 +7,15 @@ public class FPSControllerScript : MonoBehaviour
     // reference to camera component
     private Camera playerCamera;
 
-    // player speed
-    [SerializeField] private float moveSpeed = 6f;
 
-    // multiplier for run speed
-    [SerializeField] private float runMultiplier = 2f;
+    // player move speed
+    private float playerMoveSpeed = 2f;
+
+    // player walk speed
+    private float walkSpeed = 2f; //6f;
+
+    // run speed
+    private float runSpeed = 4f;
 
     // player jump height
     [SerializeField] private float jumpForce = 2f; //7f;
@@ -30,11 +33,16 @@ public class FPSControllerScript : MonoBehaviour
     private float rotationX = 0;
 
     // player's movement
-    private Vector3 moveDirection;
+    private Vector3 playerMoveDirection;
 
     // reference to the character controller component
     private CharacterController characterController;
 
+    // whether minimap is active
+    private bool minimapActive;
+
+    // minimap
+    [SerializeField] private GameObject miniMap;
 
 
 
@@ -58,25 +66,48 @@ public class FPSControllerScript : MonoBehaviour
 
         PlayerHealthController.playerHealthController.currentHealth = PlayerHealthController.playerHealthController.maximumHealth;
 
-        PlayerHealthController.playerHealthController.currentRunStamina = PlayerHealthController.playerHealthController.maximumRunStamina;
+        PlayerHealthController.playerHealthController.currentStamina = PlayerHealthController.playerHealthController.maximumStamina;
+
+        PlayerAmmoController.playerAmmoController.currentAmmo = PlayerAmmoController.playerAmmoController.maximumAmmo;
 
 
-        UIController.uiController.healthBarSlider.maxValue = PlayerHealthController.playerHealthController.maximumHealth;
-
-        UIController.uiController.healthBarSlider.value = PlayerHealthController.playerHealthController.currentHealth;
-
-        UIController.uiController.staminaBarSlider.maxValue = PlayerHealthController.playerHealthController.maximumRunStamina;
-
-        UIController.uiController.staminaBarSlider.value = PlayerHealthController.playerHealthController.currentRunStamina;
-
-        UIController.uiController.ammoText.text = "AMMO: 2000";
-
+        InitialiseUI();
     }
 
 
     // Update is called once per frame
     void Update()
     {
+        // switch minimap on/off
+        ActivateMinimap();
+
+
+        GetPlayerInput();
+    }
+
+
+    private void GetPlayerInput()
+    {
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            PlayerHealthController.playerHealthController.DamagePlayer(25);
+        }
+
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            if (PlayerAmmoController.playerAmmoController.currentAmmo == 0)
+            {
+                PlayerAmmoController.playerAmmoController.currentAmmo = PlayerAmmoController.playerAmmoController.maximumAmmo;
+                
+                UIController.uiController.ammoBarSlider.value = PlayerAmmoController.playerAmmoController.currentAmmo;
+
+                UIController.uiController.ammoText.text = "AMMO: " + PlayerAmmoController.playerAmmoController.currentAmmo;
+            }
+        }
+
+
+
         // using the mouse
         // rotate the player around the 'y' axis to make the camera look left/right
         transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * mouseSensitivity);
@@ -104,10 +135,10 @@ public class FPSControllerScript : MonoBehaviour
             float verticalInput = Input.GetAxis("Vertical");
 
             // temporary variable for storing the player's 'y' movement (jumping)
-            float moveDirectionY = moveDirection.y;
+            float moveDirectionY = playerMoveDirection.y;
 
             // get the player's move direction
-            moveDirection = (horizontalInput * transform.right) + (verticalInput * transform.forward);
+            playerMoveDirection = (horizontalInput * transform.right) + (verticalInput * transform.forward);
 
 
             // player jump
@@ -115,65 +146,142 @@ public class FPSControllerScript : MonoBehaviour
             if (Input.GetButtonDown("Jump"))
             {
                 // make the player jump
-                moveDirection.y = jumpForce;
+                playerMoveDirection.y = jumpForce;
             }
 
             // otherwise
             else
             {
                 // the player is still on the ground
-                moveDirection.y = moveDirectionY;
+                playerMoveDirection.y = moveDirectionY;
             }
 
 
             // player run
             // if the player presses the run key ( 'left-shift' )
-            if (Input.GetKeyDown(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.LeftShift))
             {
-                // make the player run
-                moveSpeed *= runMultiplier;
-
-                PlayerHealthController.playerHealthController.currentRunStamina -= PlayerHealthController.playerHealthController.runEnergyUse * Time.deltaTime;
-
-                if (PlayerHealthController.playerHealthController.currentRunStamina <= 0)
+                // and the player has current stamina
+                if (PlayerHealthController.playerHealthController.currentStamina > 0)
                 {
-                    PlayerHealthController.playerHealthController.currentRunStamina = 0;
-                }
+                    // the player starts to run
+                    //walkSpeed = runSpeed;
+                    playerMoveSpeed = runSpeed;
 
-                UIController.uiController.staminaBarSlider.value = PlayerHealthController.playerHealthController.currentRunStamina / PlayerHealthController.playerHealthController.maximumRunStamina;
+                    // so decrease the player's current stamina
+                    PlayerHealthController.playerHealthController.currentStamina -= PlayerHealthController.playerHealthController.energyRequiredToRun * Time.deltaTime;
+
+                    // if the player has no more stamina
+                    if (PlayerHealthController.playerHealthController.currentStamina <= 0)
+                    {
+                        playerMoveSpeed = walkSpeed;
+                    }
+
+                    else
+                    {
+                        playerMoveSpeed = runSpeed;
+                    }
+                }
             }
 
+            // otherwise
             // if the player releases the run key
-            if (Input.GetKeyUp(KeyCode.LeftShift))
+            else if (Input.GetKeyUp(KeyCode.LeftShift))
             {
-                // stop the player from running
-                moveSpeed /= runMultiplier;
+                // the player returns to walking
+                playerMoveSpeed = walkSpeed;
 
-                // if the run stamina recharge is currently running
-                if (PlayerHealthController.playerHealthController.rechargeRunStamina != null)
+                // if the player's current stamina is less than or equal the player's maximum stamina
+                if (PlayerHealthController.playerHealthController.currentStamina <= PlayerHealthController.playerHealthController.maximumStamina)
                 {
-                    // stop the run stamina recharge
-                    StopCoroutine(PlayerHealthController.playerHealthController.RechargeStamina());
+                    // increase the player's current stamina, but at half the stamina recharge rate
+                    PlayerHealthController.playerHealthController.currentStamina += PlayerHealthController.playerHealthController.halfStaminaRechargeRate * Time.deltaTime;
                 }
-
-                // otherwise
-                // start the run stamina recharge
-                PlayerHealthController.playerHealthController.rechargeRunStamina = StartCoroutine(PlayerHealthController.playerHealthController.RechargeStamina());
-
-                UIController.uiController.staminaBarSlider.value = PlayerHealthController.playerHealthController.currentRunStamina / PlayerHealthController.playerHealthController.maximumRunStamina;
             }
+
+            // otherwise
+            else
+            {
+                // the player is idle
+                if (PlayerHealthController.playerHealthController.currentStamina <= PlayerHealthController.playerHealthController.maximumStamina)
+                {
+                    // so increase the player's current stamina at the normal rate
+                    PlayerHealthController.playerHealthController.currentStamina += PlayerHealthController.playerHealthController.staminaRechargeRate * Time.deltaTime;
+                }
+            }
+
+            // update the stamina ui
+            UIController.uiController.staminaBarSlider.value = PlayerHealthController.playerHealthController.currentStamina;
         }
 
         //otherwise
         else
         {
             // keep the player on the ground
-            moveDirection.y -= gravity * Time.deltaTime;
+            playerMoveDirection.y -= gravity * Time.deltaTime;
         }
 
 
         // then move the player
-        characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
+        characterController.Move(playerMoveDirection * playerMoveSpeed * Time.deltaTime);
+    }
+
+
+    private void InitialiseUI()
+    {
+        // health bar
+        UIController.uiController.healthBarSlider.maxValue = PlayerHealthController.playerHealthController.maximumHealth;
+
+        UIController.uiController.healthBarSlider.value = PlayerHealthController.playerHealthController.currentHealth;
+
+        // health text
+        float healthPercentage = (float)PlayerHealthController.playerHealthController.currentHealth / PlayerHealthController.playerHealthController.maximumHealth * 100f;
+
+        UIController.uiController.healthText.text = $"HEALTH: {healthPercentage}%";
+
+        // stamina bar
+        UIController.uiController.staminaBarSlider.maxValue = PlayerHealthController.playerHealthController.maximumStamina;
+
+        UIController.uiController.staminaBarSlider.value = PlayerHealthController.playerHealthController.currentStamina;
+
+
+        // ammo bar
+        UIController.uiController.ammoBarSlider.maxValue = PlayerAmmoController.playerAmmoController.maximumAmmo;
+
+        UIController.uiController.ammoBarSlider.value = PlayerAmmoController.playerAmmoController.currentAmmo;
+
+        // ammo text
+        UIController.uiController.ammoText.text = "AMMO: " + PlayerAmmoController.playerAmmoController.currentAmmo;
+    }
+
+
+    // select whether minimap is displayed
+    private void ActivateMinimap()
+    {
+        // if the player presses the 'M' key
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            // and the minimap is not showing
+            if (!minimapActive)
+            {
+                // set minimap showing to true
+                minimapActive = true;
+
+                // and show the minimap
+                miniMap.SetActive(true);
+            }
+
+            // otherwise
+            // if the minimap is already being displayed
+            else
+            {
+                // set minimap showing to false
+                minimapActive = false;
+
+                // and hide the minimap
+                miniMap.SetActive(false);
+            }
+        }
     }
 
 

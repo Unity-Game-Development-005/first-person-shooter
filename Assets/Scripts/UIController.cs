@@ -6,12 +6,22 @@ using TMPro;
 
 public class UIController : MonoBehaviour
 {
+    // make script accessible to other scripts
     public static UIController uiController;
 
 
+    // health bar
     public Slider healthBarSlider;
 
+    public TMP_Text healthText;
+
+
+    // stamina bar
     public Slider staminaBarSlider;
+
+
+    // ammo bar
+    public Slider ammoBarSlider;
 
     public TMP_Text ammoText;
 
@@ -20,20 +30,6 @@ public class UIController : MonoBehaviour
     private void Awake()
     {
         uiController = this;
-    }
-
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
 

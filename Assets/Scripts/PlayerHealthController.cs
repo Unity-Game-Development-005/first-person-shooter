@@ -8,23 +8,25 @@ public class PlayerHealthController : MonoBehaviour
     public static PlayerHealthController playerHealthController;
 
 
-    public int maximumHealth = 100;
+    [HideInInspector] public int maximumHealth = 100;
 
-    public int currentHealth;
+    [HideInInspector] public int currentHealth;
 
-    public float bodyArmour = 1f;
+    [HideInInspector] public float bodyArmour = 1f;
 
     private float bodyArmourStrength;
 
-    public float maximumRunStamina = 100f;
 
-    public float currentRunStamina;
+    [HideInInspector] public float maximumStamina = 100f;
 
-    public float runEnergyUse = 25f;
+    public float currentStamina;
 
-    public float staminaRechargeRate = 10f;
+    [HideInInspector] public float energyRequiredToRun = 10f;
 
-    public Coroutine rechargeRunStamina;
+    [HideInInspector] public float staminaRechargeRate = 2f;
+
+    [HideInInspector] public float halfStaminaRechargeRate = 1f;
+
 
 
 
@@ -38,15 +40,7 @@ public class PlayerHealthController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        //currentHealth = maximumHealth;
 
-        //UIController.uiController.healthBarSlider.maxValue = maximumHealth;
-
-        //UIController.uiController.healthBarSlider.value = currentHealth;
-
-        //UIController.uiController.staminaBarSlider.maxValue = maximumRunStamina;
-
-        //UIController.uiController.staminaBarSlider.value = currentRunStamina;
     }
 
 
@@ -68,40 +62,17 @@ public class PlayerHealthController : MonoBehaviour
 
             if (currentHealth <= 0)
             {
-                gameObject.SetActive(false);
+                //gameObject.SetActive(false);
+                currentHealth = 0;
             }
 
             bodyArmourStrength = bodyArmour;
-        }
-    }
 
+            UIController.uiController.healthBarSlider.value = currentHealth;
 
-    // recharge the player's stamina
-    public IEnumerator RechargeStamina()
-    {
-        // wait for one second before recharging
-        yield return new WaitForSeconds(1f);
+            float healthPercentage = (float)currentHealth / maximumHealth * 100f;
 
-        // while the player's current stamina is less than the player's maximum stamina
-        while (currentRunStamina < maximumRunStamina)
-        {
-            // increase the player's stamina by the recharge rate divided by ten
-            // effectively recharging every one tenth of a second
-            currentRunStamina += staminaRechargeRate / 10f;
-
-            // if the player's current stamina is greater than the player's maximum stamina
-            if (currentRunStamina > maximumRunStamina)
-            {
-                // make the player's current stamina equal to the player's maximum stamina
-                currentRunStamina = maximumRunStamina;
-            }
-
-            // update the stamina bar display
-            // staminabar.fillamount = currentStamina / maximumStamina;
-            UIController.uiController.staminaBarSlider.value = currentRunStamina / maximumRunStamina;
-
-            // and wait for one tenth of a second
-            yield return new WaitForSeconds(0.1f);
+            UIController.uiController.healthText.text = $"HEALTH: {healthPercentage}%";
         }
     }
 

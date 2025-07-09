@@ -40,49 +40,66 @@ public class RayCastShoot : MonoBehaviour
     }
 
 
-    // Update is called once per frame
     void Update()
     {
+        // if player presses the fire button and is able to fire
         if (Input.GetButton("Fire1") && Time.time > nextFire)
         {
-            nextFire = Time.time + fireRate;
-
-            StartCoroutine(ShotEffect());
-
-
-
-            Vector3 rayOrigin = fpsCamera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0));
-
-            RaycastHit hit;
-
-            laserLine.SetPosition(0, gunEnd.position);
-
-            if (Physics.Raycast(rayOrigin, fpsCamera.transform.forward, out hit, weaponRange))
+            // and the player still has ammo
+            if (PlayerAmmoController.playerAmmoController.currentAmmo > 0)
             {
-                laserLine.SetPosition(1, hit.point);
+                nextFire = Time.time + fireRate;
 
-                ShootableBox health = hit.collider.GetComponent<ShootableBox>();
+                StartCoroutine(LaserEffect());
 
-                if (health != null)
+                // subtract one from ammo count
+                PlayerAmmoController.playerAmmoController.currentAmmo--;
+
+                UIController.uiController.ammoBarSlider.value = PlayerAmmoController.playerAmmoController.currentAmmo;
+
+                UIController.uiController.ammoText.text = "AMMO: " + PlayerAmmoController.playerAmmoController.currentAmmo;
+
+
+                Vector3 rayOrigin = fpsCamera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0));
+
+                RaycastHit hit;
+
+                laserLine.SetPosition(0, gunEnd.position);
+
+                if (Physics.Raycast(rayOrigin, fpsCamera.transform.forward, out hit, weaponRange))
                 {
-                    health.Damage(gunDamage);
+                    laserLine.SetPosition(1, hit.point);
+
+                    ShootableBox health = hit.collider.GetComponent<ShootableBox>();
+
+                    if (health != null)
+                    {
+                        health.Damage(gunDamage);
+                    }
+
+                    if (hit.rigidbody != null)
+                    {
+                        hit.rigidbody.AddForce(-hit.normal * hitForce);
+                    }
+
+                    RagdollToggle ragdollSwitcher = hit.collider.GetComponent<RagdollToggle>();
+
+                    if (ragdollSwitcher != null)
+                    {
+                        ragdollSwitcher.TriggerRagdoll();
+                    }
                 }
 
-                if (hit.rigidbody != null)
+                else
                 {
-                    hit.rigidbody.AddForce(-hit.normal * hitForce);
+                    laserLine.SetPosition(1, fpsCamera.transform.forward * weaponRange);
                 }
-            }
-
-            else
-            {
-                laserLine.SetPosition(1, fpsCamera.transform.forward * weaponRange);
             }
         }
     }
 
 
-    private IEnumerator ShotEffect()
+    private IEnumerator LaserEffect()
     {
         gunAudio.Play();
 
