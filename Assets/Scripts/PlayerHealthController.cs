@@ -72,7 +72,7 @@ public class PlayerHealthController : MonoBehaviour
 
             float healthPercentage = (float)currentHealth / maximumHealth * 100f;
 
-            UIController.uiController.healthText.text = $"HEALTH: {healthPercentage}%";
+            UIController.uiController.healthText.text = $"{healthPercentage}%";
         }
     }
 

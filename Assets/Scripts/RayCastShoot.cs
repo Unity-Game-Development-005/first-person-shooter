@@ -42,6 +42,12 @@ public class RayCastShoot : MonoBehaviour
 
     void Update()
     {
+        FireLaser();
+    }
+
+
+    private void FireLaser()
+    {
         // if player presses the fire button and is able to fire
         if (Input.GetButton("Fire1") && Time.time > nextFire)
         {
@@ -57,7 +63,7 @@ public class RayCastShoot : MonoBehaviour
 
                 UIController.uiController.ammoBarSlider.value = PlayerAmmoController.playerAmmoController.currentAmmo;
 
-                UIController.uiController.ammoText.text = "AMMO: " + PlayerAmmoController.playerAmmoController.currentAmmo;
+                UIController.uiController.ammoText.text = PlayerAmmoController.playerAmmoController.currentAmmo + " / " + PlayerAmmoController.playerAmmoController.maximumAmmo;
 
 
                 Vector3 rayOrigin = fpsCamera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0));

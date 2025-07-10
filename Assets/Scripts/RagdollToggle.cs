@@ -27,6 +27,10 @@ public class RagdollToggle : MonoBehaviour
 
         // disable the character collider component
         GetComponent<Collider>().enabled = false;
+
+
+        // disable the nav mesh agent
+        
     }
 
 

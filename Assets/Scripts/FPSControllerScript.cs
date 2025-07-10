@@ -9,13 +9,13 @@ public class FPSControllerScript : MonoBehaviour
 
 
     // player move speed
-    private float playerMoveSpeed = 2f;
+    private float playerMoveSpeed = 3f;
 
     // player walk speed
-    private float walkSpeed = 2f; //6f;
+    private float walkSpeed = 3f;
 
     // run speed
-    private float runSpeed = 4f;
+    private float runSpeed = 6f;
 
     // player jump height
     [SerializeField] private float jumpForce = 2f; //7f;
@@ -44,6 +44,18 @@ public class FPSControllerScript : MonoBehaviour
     // minimap
     [SerializeField] private GameObject miniMap;
 
+    private const int CONSOLE_ACTIVE = 1;
+    private const int CONSOLE_INACTIVE = -1;
+
+    // console control modes
+    [HideInInspector] public int consoleState;
+
+
+    public Animator consoleAnimator;
+
+
+
+
 
 
 
@@ -64,6 +76,7 @@ public class FPSControllerScript : MonoBehaviour
         Cursor.visible = false;
 
 
+        // set the player's current health, stamina and ammo
         PlayerHealthController.playerHealthController.currentHealth = PlayerHealthController.playerHealthController.maximumHealth;
 
         PlayerHealthController.playerHealthController.currentStamina = PlayerHealthController.playerHealthController.maximumStamina;
@@ -72,6 +85,11 @@ public class FPSControllerScript : MonoBehaviour
 
 
         InitialiseUI();
+
+        // show map console
+        consoleState = CONSOLE_ACTIVE;
+
+        SetConsoleState(CONSOLE_ACTIVE);
     }
 
 
@@ -94,15 +112,18 @@ public class FPSControllerScript : MonoBehaviour
         }
 
 
+        // if the player presses the 'r' key
         if (Input.GetKeyDown(KeyCode.R))
         {
+            // and the player is out of ammo
             if (PlayerAmmoController.playerAmmoController.currentAmmo == 0)
             {
+                // then replenish the player's ammo
                 PlayerAmmoController.playerAmmoController.currentAmmo = PlayerAmmoController.playerAmmoController.maximumAmmo;
                 
                 UIController.uiController.ammoBarSlider.value = PlayerAmmoController.playerAmmoController.currentAmmo;
 
-                UIController.uiController.ammoText.text = "AMMO: " + PlayerAmmoController.playerAmmoController.currentAmmo;
+                UIController.uiController.ammoText.text = PlayerAmmoController.playerAmmoController.currentAmmo + " / " + PlayerAmmoController.playerAmmoController.maximumAmmo;
             }
         }
 
@@ -212,6 +233,11 @@ public class FPSControllerScript : MonoBehaviour
 
             // update the stamina ui
             UIController.uiController.staminaBarSlider.value = PlayerHealthController.playerHealthController.currentStamina;
+
+            // stamina text
+            float staminaPercentage = (float)PlayerHealthController.playerHealthController.currentStamina / PlayerHealthController.playerHealthController.maximumStamina * 100f;
+
+            UIController.uiController.staminaText.text = $"{(int)staminaPercentage}%";
         }
 
         //otherwise
@@ -237,12 +263,17 @@ public class FPSControllerScript : MonoBehaviour
         // health text
         float healthPercentage = (float)PlayerHealthController.playerHealthController.currentHealth / PlayerHealthController.playerHealthController.maximumHealth * 100f;
 
-        UIController.uiController.healthText.text = $"HEALTH: {healthPercentage}%";
+        UIController.uiController.healthText.text = $"{healthPercentage}%";
 
         // stamina bar
         UIController.uiController.staminaBarSlider.maxValue = PlayerHealthController.playerHealthController.maximumStamina;
 
         UIController.uiController.staminaBarSlider.value = PlayerHealthController.playerHealthController.currentStamina;
+        
+        // stamina text
+        float staminaPercentage = (float)PlayerHealthController.playerHealthController.currentStamina / PlayerHealthController.playerHealthController.maximumStamina * 100f;
+
+        UIController.uiController.staminaText.text = $"{(int)staminaPercentage}%";
 
 
         // ammo bar
@@ -251,7 +282,7 @@ public class FPSControllerScript : MonoBehaviour
         UIController.uiController.ammoBarSlider.value = PlayerAmmoController.playerAmmoController.currentAmmo;
 
         // ammo text
-        UIController.uiController.ammoText.text = "AMMO: " + PlayerAmmoController.playerAmmoController.currentAmmo;
+        UIController.uiController.ammoText.text = PlayerAmmoController.playerAmmoController.currentAmmo + " / " + PlayerAmmoController.playerAmmoController.maximumAmmo;
     }
 
 
@@ -261,26 +292,31 @@ public class FPSControllerScript : MonoBehaviour
         // if the player presses the 'M' key
         if (Input.GetKeyDown(KeyCode.M))
         {
-            // and the minimap is not showing
-            if (!minimapActive)
-            {
-                // set minimap showing to true
-                minimapActive = true;
+            // display the minimap depending upon its previous state
+            consoleState = -consoleState;
 
-                // and show the minimap
-                miniMap.SetActive(true);
-            }
+            SetConsoleState(consoleState);
+        }
+    }
 
-            // otherwise
-            // if the minimap is already being displayed
-            else
-            {
-                // set minimap showing to false
-                minimapActive = false;
 
-                // and hide the minimap
-                miniMap.SetActive(false);
-            }
+    private void SetConsoleState(int mapMode)
+    {
+        switch (mapMode)
+        {
+            // display the minimap
+            case CONSOLE_ACTIVE:
+
+                consoleAnimator.SetBool("consoleMode", true);
+
+                break;
+
+            // hide the minimap
+            case CONSOLE_INACTIVE:
+
+                consoleAnimator.SetBool("consoleMode", false);
+
+                break;
         }
     }
 

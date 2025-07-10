@@ -19,6 +19,8 @@ public class UIController : MonoBehaviour
     // stamina bar
     public Slider staminaBarSlider;
 
+    public TMP_Text staminaText;
+
 
     // ammo bar
     public Slider ammoBarSlider;
