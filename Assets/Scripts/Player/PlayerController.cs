@@ -2,20 +2,20 @@
 using UnityEngine;
 
 
-public class FPSControllerScript : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     // reference to camera component
     private Camera playerCamera;
 
 
     // player move speed
-    private float playerMoveSpeed = 3f;
+    private float playerMoveSpeed = 4f;
 
     // player walk speed
-    private float walkSpeed = 3f;
+    private float walkSpeed = 4f;
 
     // run speed
-    private float runSpeed = 6f;
+    private float runSpeed = 7f;
 
     // player jump height
     [SerializeField] private float jumpForce = 2f; //7f;

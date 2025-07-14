@@ -74,13 +74,28 @@ public class RayCastShoot : MonoBehaviour
 
                 if (Physics.Raycast(rayOrigin, fpsCamera.transform.forward, out hit, weaponRange))
                 {
+                    Debug.Log("HIT: " + hit);
                     laserLine.SetPosition(1, hit.point);
 
-                    ShootableBox health = hit.collider.GetComponent<ShootableBox>();
-
+                    // damage the enemy
+                    EnemyHealthController health = hit.collider.GetComponent<EnemyHealthController>();
+                    
+                    Debug.Log(health);
                     if (health != null)
                     {
-                        health.Damage(gunDamage);
+                        health.DamageEnemy(gunDamage);
+                        Debug.Log(health.currentHealth);
+
+                        if (health.currentHealth <= 0)
+                        {
+                            RagdollToggle ragdollSwitcher = hit.collider.GetComponent<RagdollToggle>();
+
+                            if (ragdollSwitcher != null)
+                            {
+                                ragdollSwitcher.TriggerRagdoll();
+                            }
+
+                        }
                     }
 
                     if (hit.rigidbody != null)
@@ -88,12 +103,12 @@ public class RayCastShoot : MonoBehaviour
                         hit.rigidbody.AddForce(-hit.normal * hitForce);
                     }
 
-                    RagdollToggle ragdollSwitcher = hit.collider.GetComponent<RagdollToggle>();
+                    /*RagdollToggle ragdollSwitcher = hit.collider.GetComponent<RagdollToggle>();
 
                     if (ragdollSwitcher != null)
                     {
                         ragdollSwitcher.TriggerRagdoll();
-                    }
+                    }*/
                 }
 
                 else
