@@ -18,19 +18,19 @@ public class ExitController : MonoBehaviour
     {
         if(other.tag == "Player")
         {
-            GameController.instance.levelEnding = true;
+            GameController.gameController.levelEnding = true;
 
-            StartCoroutine(EndLevelCo());
+            StartCoroutine(EndLevelCoroutine());
 
             //AudioManager.instance.PlayLevelVictory();
         }
     }
 
-    private IEnumerator EndLevelCo()
+    private IEnumerator EndLevelCoroutine()
     {
-        PlayerPrefs.SetString(nextLevel + "_cp", "");
+        //PlayerPrefs.SetString(nextLevel + "_cp", "");
 
-        PlayerPrefs.SetString("CurrentLevel", nextLevel);
+        //PlayerPrefs.SetString("CurrentLevel", nextLevel);
 
         yield return new WaitForSeconds(waitToEndLevel);
 

@@ -51,6 +51,7 @@ public class RayCastShoot : MonoBehaviour
         // if player presses the fire button and is able to fire
         if (Input.GetButton("Fire1") && Time.time > nextFire)
         {
+            Debug.Log("FIRE");
             // and the player still has ammo
             if (PlayerAmmoController.playerAmmoController.currentAmmo > 0)
             {
@@ -67,6 +68,8 @@ public class RayCastShoot : MonoBehaviour
 
 
                 Vector3 rayOrigin = fpsCamera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0));
+
+                Debug.DrawRay(rayOrigin, fpsCamera.transform.forward * weaponRange, Color.green);
 
                 RaycastHit hit;
 

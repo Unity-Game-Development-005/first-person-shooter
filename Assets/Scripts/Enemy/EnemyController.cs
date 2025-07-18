@@ -7,7 +7,7 @@ using UnityEngine.AI;
 public class EnemyController : MonoBehaviour
 {
     // reference to the nav mesh agent
-    private NavMeshAgent enemyAgent;
+    public NavMeshAgent enemyAgent;
 
     public GameObject bullet;
 
@@ -21,10 +21,10 @@ public class EnemyController : MonoBehaviour
 
 
     // calculates the direction to move the agent toward the player
-    private Vector3 currentDestination;
+    //private Vector3 currentDestination;
 
     // the distance the player has to get to the agent before the agent starts to follow
-    [SerializeField] private float followDistance = 10f;
+    //[SerializeField] private float followDistance = 10f;
 
 
 
@@ -70,12 +70,16 @@ public class EnemyController : MonoBehaviour
     void Start()
     {
         // set the reference to the nav mesh agent
-        enemyAgent = GetComponent<NavMeshAgent>();
+        //enemyAgent = GetComponent<NavMeshAgent>();
 
         // set the reference to the player transform
-        playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+        //playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
 
         startPoint = transform.position;
+
+        shootTimeCounter = timeToShoot;
+
+        shotWaitCounter = waitBetweenShots;
     }
 
 
@@ -88,7 +92,7 @@ public class EnemyController : MonoBehaviour
 
     private void MoveEnemy()
     {
-        targetPoint = playerTransform.position;
+        targetPoint = PlayerController.playerController.transform.position;
 
         targetPoint.y = transform.position.y;
 
@@ -142,12 +146,15 @@ public class EnemyController : MonoBehaviour
             }
 
             // if the player is out of range
-            if (Vector3.Distance(transform.position, playerTransform.position) > distanceToLose)
+            if (Vector3.Distance(transform.position, targetPoint) > distanceToLose)
             {
-                // stop the enemy chasing the player
-                chasing = false;
+                if (!wasShot)
+                {
+                    // stop the enemy chasing the player
+                    chasing = false;
 
-                chaseCounter = keepChasingTime;
+                    chaseCounter = keepChasingTime;
+                }
             }
 
             else
@@ -169,7 +176,7 @@ public class EnemyController : MonoBehaviour
 
             else
             {
-                if (playerTransform.gameObject.activeInHierarchy)
+                if (PlayerController.playerController.gameObject.activeInHierarchy)
                 {
                     shootTimeCounter -= Time.deltaTime;
 
@@ -181,16 +188,15 @@ public class EnemyController : MonoBehaviour
                         {
                             fireCount = fireRate;
 
-                            firePoint.LookAt(playerTransform.position + new Vector3(0f, 1.2f, 0f));
+                            firePoint.LookAt(PlayerController.playerController.transform.position + new Vector3(0f, 1.2f, 0f));
 
                             // check the angle to the player
-                            Vector3 targetDir = playerTransform.position - transform.position;
+                            Vector3 targetDir = PlayerController.playerController.transform.position - transform.position;
 
                             float angle = Vector3.SignedAngle(targetDir, transform.forward, Vector3.up);
 
                             if (Mathf.Abs(angle) < 30f)
                             {
-
                                 Instantiate(bullet, firePoint.position, firePoint.rotation);
 
                                 enemyAnimator.SetTrigger("fireShot");

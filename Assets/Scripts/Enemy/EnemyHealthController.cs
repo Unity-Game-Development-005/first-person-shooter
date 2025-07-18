@@ -9,8 +9,6 @@ public class EnemyHealthController : MonoBehaviour
 	// enemy health
 	public int currentHealth = 5;
 
-    // reference to enemy controller script
-    public EnemyController enemyController;
 
 
 
@@ -19,11 +17,6 @@ public class EnemyHealthController : MonoBehaviour
         // subtract damage amount
         currentHealth -= damageAmount;
 
-        if (enemyController != null)
-        {
-            enemyController.GetShot();
-        }
-
         // if the enemie's health is less than or equal to zero
         if (currentHealth <= 0) 
 		{
@@ -31,12 +24,12 @@ public class EnemyHealthController : MonoBehaviour
             //Destroy(gameObject);
 
 
-            /*RagdollToggle ragdollSwitcher = GetComponent<RagdollToggle>();
+            RagdollToggle ragdollSwitcher = GetComponent<RagdollToggle>();
 
-            //if (ragdollSwitcher != null)
-            //{
+            if (ragdollSwitcher != null)
+            {
                 ragdollSwitcher.TriggerRagdoll();
-            //}*/
+            }
 
         }
     }

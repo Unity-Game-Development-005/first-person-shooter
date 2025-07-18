@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
-    public static GameController instance;
+    public static GameController gameController;
 
     public float waitAfterDying = 2f;
 
@@ -18,7 +18,7 @@ public class GameController : MonoBehaviour
 
     private void Awake()
     {
-        instance = this;
+        gameController = this;
     }
 
 
@@ -31,16 +31,15 @@ public class GameController : MonoBehaviour
 
     public void PlayerDied()
     {
-        StartCoroutine(PlayerDiedCo());
-
-        //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        StartCoroutine(PlayerDiedCoroutine());
     }
 
-    public IEnumerator PlayerDiedCo()
+    public IEnumerator PlayerDiedCoroutine()
     {
         yield return new WaitForSeconds(waitAfterDying);
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
+
 
 } // end of class

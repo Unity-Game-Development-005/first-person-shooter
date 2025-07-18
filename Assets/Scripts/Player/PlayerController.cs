@@ -1,13 +1,23 @@
 
+using System.Collections;
 using UnityEngine;
 
 
 public class PlayerController : MonoBehaviour
 {
+    public static PlayerController playerController;
+
+
+
+    // reference to the character controller component
+    private CharacterController characterController;
+
     // reference to camera component
     private Camera playerCamera;
 
 
+
+    // Player
     // player move speed
     private float playerMoveSpeed = 4f;
 
@@ -23,11 +33,13 @@ public class PlayerController : MonoBehaviour
     // amount of gravity applied to the player
     [SerializeField] private float gravity = 6f; //9.8f;
 
+
+    // Mouse Controller
     // how quickly the mouse moves
     public float mouseSensitivity = 2f;
 
     // up/down player movement contraint
-    [SerializeField] private float lookXLimit = 60f;
+    [SerializeField] private float lookXLimit = 45f;
 
     // camera rotation around the 'x' axis
     private float rotationX = 0;
@@ -35,8 +47,9 @@ public class PlayerController : MonoBehaviour
     // player's movement
     private Vector3 playerMoveDirection;
 
-    // reference to the character controller component
-    private CharacterController characterController;
+
+    #region MINI MAP CONTROLLER
+    public Animator consoleAnimator;
 
     // whether minimap is active
     private bool minimapActive;
@@ -49,15 +62,16 @@ public class PlayerController : MonoBehaviour
 
     // console control modes
     [HideInInspector] public int consoleState;
-
-
-    public Animator consoleAnimator;
-
+    #endregion
 
 
 
 
 
+    private void Awake()
+    {
+        playerController = this;
+    }
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -99,12 +113,185 @@ public class PlayerController : MonoBehaviour
         // switch minimap on/off
         ActivateMinimap();
 
+        // rotate / tilt the player camera
+        CameraController();
 
-        GetPlayerInput();
+        // move the player
+        MovePlayer();
     }
 
 
-    private void GetPlayerInput()
+    private void OldMovePlayer()
+    {
+        //if (!UIController.instance.pauseScreen.activeInHierarchy && !GameManager.instance.levelEnding)
+        if (!GameController.gameController.levelEnding)
+        {
+
+
+
+
+
+
+
+
+
+
+
+            /*moveInput.x = Input.GetAxis("Horizontal") * walkSpeed * Time.deltaTime;
+
+            moveInput.z = Input.GetAxis("Vertical") * walkSpeed * Time.deltaTime;
+
+            //store y velocity
+            //float yStore = moveInput.y;
+
+            Vector3 verticleMovement = transform.forward * Input.GetAxis("Vertical");
+
+            Vector3 horizontalMovement = transform.right * Input.GetAxis("Horizontal");
+
+            //moveInput = horiMove + vertMove;
+
+            //moveInput.Normalize();
+
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                moveInput *= runSpeed;
+            }
+
+            else
+            {
+                moveInput *= moveSpeed;
+            }
+
+            /*moveInput.y = yStore;
+
+            moveInput.y += Physics.gravity.y * gravity * Time.deltaTime;
+
+            if (charCon.isGrounded)
+            {
+                moveInput.y = Physics.gravity.y * gravity * Time.deltaTime;
+            }
+
+            canJump = Physics.OverlapSphere(groundCheckPoint.position, .25f, whatIsGround).Length > 0;
+
+            if (canJump)
+            {
+                canDoubleJump = false;
+            }
+
+
+
+
+
+            //Handle Jumping
+            if (Input.GetKeyDown(KeyCode.Space) && canJump)
+            {
+                moveInput.y = jumpPower;
+
+                canDoubleJump = true;
+
+                AudioManager.instance.PlaySFX(8);
+            }
+
+            else if (canDoubleJump && Input.GetKeyDown(KeyCode.Space))
+            {
+                moveInput.y = jumpPower;
+
+                canDoubleJump = false;
+
+                AudioManager.instance.PlaySFX(8);
+            }
+
+
+            /*if (bounce)
+            {
+                bounce = false;
+                moveInput.y = bounceAmount;
+
+                canDoubleJump = true;
+
+
+            }
+
+            
+            /*characterController.Move(moveInput * Time.deltaTime);*/
+
+
+            //CameraController();
+
+
+
+            //muzzleFlash.SetActive(false);
+
+            //Handle Shooting
+            //single shots
+            /*if (Input.GetMouseButtonDown(0) && activeGun.fireCounter <= 0)
+            {
+                RaycastHit hit;
+
+                if (Physics.Raycast(camTrans.position, camTrans.forward, out hit, 50f))
+                {
+                    if (Vector3.Distance(camTrans.position, hit.point) > 2f)
+                    {
+                        firePoint.LookAt(hit.point);
+                    }
+                }
+
+                else
+                {
+                    firePoint.LookAt(camTrans.position + (camTrans.forward * 30f));
+                }
+
+
+
+                //Instantiate(bullet, firePoint.position, firePoint.rotation);
+                FireShot();
+            }
+
+            //repeating shots
+            if (Input.GetMouseButton(0) && activeGun.canAutoFire)
+            {
+                if (activeGun.fireCounter <= 0)
+                {
+                    FireShot();
+                }
+            }
+
+            //if (Input.GetKeyDown(KeyCode.Tab))
+            //{
+                //SwitchGun();
+            //}
+
+            //if (Input.GetMouseButtonDown(1))
+            //{
+                //CameraController.instance.ZoomIn(activeGun.zoomAmount);
+            //}
+
+            if (Input.GetMouseButton(1))
+            {
+                gunHolder.position = Vector3.MoveTowards(gunHolder.position, adsPoint.position, adsSpeed * Time.deltaTime);
+            }
+
+            else
+            {
+                gunHolder.localPosition = Vector3.MoveTowards(gunHolder.localPosition, gunStartPos, adsSpeed * Time.deltaTime);
+            }
+
+
+
+            if (Input.GetMouseButtonUp(1))
+            {
+                CameraController.cameraController.ZoomOut();
+            }
+
+
+            //anim.SetFloat("moveSpeed", moveInput.magnitude);
+            //anim.SetBool("onGround", canJump);*/
+
+        }
+    }
+
+
+    private void MovePlayer()
     {
         if (Input.GetKeyDown(KeyCode.H))
         {
@@ -128,19 +315,8 @@ public class PlayerController : MonoBehaviour
         }
 
 
-
-        // using the mouse
-        // rotate the player around the 'y' axis to make the camera look left/right
-        transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * mouseSensitivity);
-
-        // rotate the camera around the 'x' axis
-        rotationX += -Input.GetAxis("Mouse Y") * mouseSensitivity;
-
-        // restrict the movement of the camera when the player looks up/down
-        rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
-
-        // tilt the camera
-        playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+        // rotate / tilt the player camera
+        //CameraController();
 
 
 
@@ -250,6 +426,20 @@ public class PlayerController : MonoBehaviour
 
         // then move the player
         characterController.Move(playerMoveDirection * playerMoveSpeed * Time.deltaTime);
+    }
+
+
+    private void CameraController()
+    {
+        // rotate the player in the 'y' axis
+        transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * mouseSensitivity);
+
+        // rotate the player camera around the 'x' axis
+        rotationX += -Input.GetAxis("Mouse Y") * mouseSensitivity;
+
+        rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
+
+        playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
     }
 
 
